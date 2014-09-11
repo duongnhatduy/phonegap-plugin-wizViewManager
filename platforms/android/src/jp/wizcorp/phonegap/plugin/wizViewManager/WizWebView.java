@@ -18,7 +18,13 @@ import android.graphics.Color;
 import android.os.Build;
 import android.view.Gravity;
 import android.view.ViewGroup;
+import android.webkit.*;
 import android.webkit.MimeTypeMap;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import org.apache.cordova.CallbackContext;
 import org.json.JSONException;
@@ -29,9 +35,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 import java.io.File;
@@ -105,8 +108,10 @@ public class WizWebView extends WebView  {
         RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.FILL_PARENT,
                 RelativeLayout.LayoutParams.FILL_PARENT);
-
+        final ProgressBar Pbar = (ProgressBar) new ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal);
+        Pbar.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 2));
         // Default full screen
+        frame.addView(Pbar);
         frame.addView(this, rlp);
 
         this.setPadding(999, 0, 0, 0);
@@ -115,6 +120,17 @@ public class WizWebView extends WebView  {
         this.setBackgroundColor(Color.TRANSPARENT);
         if (Build.VERSION.SDK_INT >= 11) this.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
 
+        this.setWebChromeClient(new WebChromeClient(){
+            public void onProgressChanged(WebView view, int progress) {
+                if (progress < 100 && Pbar.getVisibility() == ProgressBar.GONE) {
+                    Pbar.setVisibility(ProgressBar.VISIBLE);
+                }
+                Pbar.setProgress(progress);
+                if (progress == 100) {
+                    Pbar.setVisibility(ProgressBar.GONE);
+                }
+            }
+        });
         // Override url loading on WebViewClient
         this.setWebViewClient(new WebViewClient () {
             @Override
